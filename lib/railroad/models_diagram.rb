@@ -138,6 +138,12 @@ class ModelsDiagram < AppDiagram
       assoc_name = assoc.name.to_s
     end 
 
+    # Handle namespaced associations nicely
+    if class_name =~ /::/ && !(assoc_class_name =~ /::/)
+      namespace = class_name.split("::")[0..-2].join("::")
+      assoc_class_name = namespace + "::" + assoc_class_name
+    end
+
     if assoc.macro.to_s == 'has_one' 
       assoc_type = 'one-one'
     elsif assoc.macro.to_s == 'has_many' && (! assoc.options[:through])
