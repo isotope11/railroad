@@ -20,11 +20,9 @@ class ControllersDiagram < AppDiagram
     STDERR.print "Generating controllers diagram\n" if @options.verbose
 
     files = Dir.glob("app/controllers/**/*_controller.rb") - @options.exclude
-    files << 'app/controllers/application.rb'
+    files << 'app/controllers/application_controller.rb'
     files.each do |f|
       class_name = extract_class_name(f)
-      # ApplicationController's file is 'application.rb'
-      class_name += 'Controller' if class_name == 'Application'
       process_class class_name.constantize
     end 
   end # generate
@@ -36,7 +34,7 @@ class ControllersDiagram < AppDiagram
     begin
       disable_stdout
       # ApplicationController must be loaded first
-      require "app/controllers/application.rb" 
+      require "app/controllers/application_controller.rb" 
       files = Dir.glob("app/controllers/**/*_controller.rb") - @options.exclude
       files.each {|c| require c }
       enable_stdout
@@ -60,12 +58,15 @@ class ControllersDiagram < AppDiagram
                       :protected => [], 
                       :private   => []}
       current_class.public_instance_methods(false).sort.each { |m|
+        next if m =~ /_one_time_conditions/
         node_attribs[:public] << m
       } unless @options.hide_public
       current_class.protected_instance_methods(false).sort.each { |m|
+        next if m =~ /_one_time_conditions/
         node_attribs[:protected] << m
       } unless @options.hide_protected
       current_class.private_instance_methods(false).sort.each { |m|
+        next if m =~ /_one_time_conditions/
         node_attribs[:private] << m 
       } unless @options.hide_private
       @graph.add_node ['controller', current_class.name, node_attribs]

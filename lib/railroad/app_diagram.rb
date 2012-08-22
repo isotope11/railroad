@@ -89,13 +89,15 @@ class AppDiagram
     name = filename.chomp(".rb")
     # 2) Split on the directory splitter (/, windows guys can eat shit and die)
     name_arr = name.split("/")
-    # 3) Find where models shows up in the hierarchy...
-    models_index = name_arr.index("models")
-    if(models_index)
-      # 4) ...and only get the bits after that
-      namespace_path = name_arr[models_index + 1..-1]
-      # 5) Now try to get a constant name out of that
-      return namespace_path.map(&:camelize).join("::").camelize
+    # 3) Find where models/controllers shows up in the hierarchy...
+    ["models", "controllers"].each do |diagram_type|
+      diagram_type_index = name_arr.index(diagram_type)
+      if(diagram_type_index)
+        # 4) ...and only get the bits after that
+        namespace_path = name_arr[diagram_type_index + 1..-1]
+        # 5) Now try to get a constant name out of that
+        return namespace_path.map(&:camelize).join("::").camelize
+      end
     end
 
     # This doesn't support namespaces at all, but I'll fall back to it if namespacing doesn't work
