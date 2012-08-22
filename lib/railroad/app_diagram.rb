@@ -83,6 +83,22 @@ class AppDiagram
   def extract_class_name(filename)
     #filename.split('/')[2..-1].join('/').split('.').first.camelize
     # Fixed by patch from ticket #12742
+    #
+    # Return a namespaced path for a model if we can find one
+    # 1) Get the filename without the ruby extension
+    name = filename.chomp(".rb")
+    # 2) Split on the directory splitter (/, windows guys can eat shit and die)
+    name_arr = name.split("/")
+    # 3) Find where models shows up in the hierarchy...
+    models_index = name_arr.index("models")
+    if(models_index)
+      # 4) ...and only get the bits after that
+      namespace_path = name_arr[models_index + 1..-1]
+      # 5) Now try to get a constant name out of that
+      return namespace_path.map(&:camelize).join("::").camelize
+    end
+
+    # This doesn't support namespaces at all, but I'll fall back to it if namespacing doesn't work
     File.basename(filename).chomp(".rb").camelize
   end
 
